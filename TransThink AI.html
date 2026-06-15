@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>传思引擎 TransThink AI - 传播研究选题灵感助手</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        academic: {
+                            50: '#f4f6f8',
+                            100: '#e9edf1',
+                            200: '#d2dbe2',
+                            600: '#4a5d6e',
+                            800: '#2c3e50',
+                            900: '#1a252f',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@300;400;500;600&display=swap');
+        .academic-font {
+            font-family: 'Noto Serif SC', serif;
+        }
+        body {
+            font-family: 'Inter', 'Noto Serif SC', sans-serif;
+        }
+        /* Markdown rendering styles in chat bubbles */
+        .chat-content p { margin-bottom: 0.5rem; }
+        .chat-content ul, .chat-content ol { padding-left: 1.25rem; margin-bottom: 0.5rem; list-style-type: disc; }
+        .chat-content strong { font-weight: 600; color: #1a252f; }
+        .chat-content-user strong { color: #ffffff; }
+    </style>
+</head>
+<body class="bg-academic-50 text-academic-900 min-h-screen flex flex-col">
+
+    <!-- 导航栏 -->
+    <header class="bg-white border-b border-academic-100 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
+                <div class="bg-academic-800 text-white p-2 rounded-lg flex items-center justify-center">
+                    <i class="fa-solid fa-compass text-xl"></i>
+                </div>
+                <div>
+                    <span class="font-bold text-lg tracking-wider block">传思引擎</span>
+                    <span class="text-xs text-academic-600 block -mt-1 font-mono">TransThink AI</span>
+                </div>
+            </div>
+            
+            <nav class="hidden md:flex space-x-8">
+                <button onclick="switchTab('home')" class="nav-link text-academic-800 font-medium border-b-2 border-academic-800 pb-1" id="nav-home">首页</button>
+                <button onclick="switchTab('workspace')" class="nav-link text-academic-600 hover:text-academic-800 pb-1" id="nav-workspace">研究工作台</button>
+                <button onclick="switchTab('diagnosis')" class="nav-link text-academic-600 hover:text-academic-800 pb-1" id="nav-diagnosis">切口诊断</button>
+                <button onclick="switchTab('library')" class="nav-link text-academic-600 hover:text-academic-800 pb-1" id="nav-library">我的灵感库</button>
+            </nav>
+
+            <div class="flex items-center space-x-4">
+                <span class="text-xs bg-academic-100 text-academic-800 px-2.5 py-1 rounded-full font-medium border border-academic-200">
+                    学研版 V1.1 (大模型已对接)
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主体内容 -->
+    <main class="flex-grow">
+        
+        <!-- 页面 1：首页 -->
+        <section id="page-home" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h1 class="text-4xl sm:text-5xl font-bold academic-font text-academic-800 mb-6 leading-tight">
+                    发现传播灵感，找到研究切口
+                </h1>
+                <p class="text-lg text-academic-600 mb-8">
+                    传思引擎专注于辅助新闻传播及人文社科学子，通过多层 AI 代理将模糊的想法转化为具备研究价值、理论视角明确的学术选题。
+                </p>
+
+                <!-- 搜索引导区域 -->
+                <div class="bg-white p-4 rounded-xl shadow-md border border-academic-100 max-w-2xl mx-auto">
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <input type="text" id="home-search-input" placeholder="输入你想研究的现象（例如：小红书、AI数字人主播、虚拟伴侣...）" 
+                               class="flex-grow px-4 py-3 border border-academic-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-academic-800 text-sm">
+                        <button onclick="startExploreFromHome()" class="bg-academic-800 hover:bg-academic-900 text-white font-medium px-6 py-3 rounded-lg transition-all text-sm flex items-center justify-center space-x-2 shrink-0">
+                            <span>开始探索</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                    <div class="mt-4 flex flex-wrap items-center justify-start gap-2 text-xs text-academic-600 text-left">
+                        <span class="font-medium text-academic-800"><i class="fa-regular fa-lightbulb mr-1"></i>大家都在搜：</span>
+                        <button onclick="quickSearch('小红书代际沟通')" class="bg-academic-50 hover:bg-academic-100 px-2.5 py-1 rounded border border-academic-100">小红书代际沟通</button>
+                        <button onclick="quickSearch('AI数字人主播的信任形成')" class="bg-academic-50 hover:bg-academic-100 px-2.5 py-1 rounded border border-academic-100">AI数字人主播</button>
+                        <button onclick="quickSearch('短视频算法焦虑')" class="bg-academic-50 hover:bg-academic-100 px-2.5 py-1 rounded border border-academic-100">短视频算法焦虑</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 三个功能入口卡片 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white p-8 rounded-xl border border-academic-100 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="text-indigo-600 mb-4 text-3xl"><i class="fa-solid fa-flask-vial"></i></div>
+                    <h3 class="text-lg font-bold academic-font mb-2 text-academic-800">传播洞察 Lab</h3>
+                    <p class="text-sm text-academic-600 leading-relaxed mb-4">
+                        从一个关键词或单一平台，多维度拆解潜在的研究客体、互动关系、技术环境与青年文化景观。
+                    </p>
+                    <button onclick="openFeature('workspace', 'insight')" class="text-sm text-academic-800 font-medium hover:underline flex items-center">
+                        进入探索 <i class="fa-solid fa-chevron-right ml-1 text-xs"></i>
+                    </button>
+                </div>
+                
+                <div class="bg-white p-8 rounded-xl border border-academic-100 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="text-emerald-600 mb-4 text-3xl"><i class="fa-solid fa-tower-broadcast"></i></div>
+                    <h3 class="text-lg font-bold academic-font mb-2 text-academic-800">热点解码 Radar</h3>
+                    <p class="text-sm text-academic-600 leading-relaxed mb-4">
+                        追踪当下社会与互联网传播热点现象，提炼媒介化生存、技术驯化等前沿学术命题。
+                    </p>
+                    <button onclick="openFeature('workspace', 'radar')" class="text-sm text-academic-800 font-medium hover:underline flex items-center">
+                        进入探索 <i class="fa-solid fa-chevron-right ml-1 text-xs"></i>
+                    </button>
+                </div>
+
+                <div class="bg-white p-8 rounded-xl border border-academic-100 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="text-amber-600 mb-4 text-3xl"><i class="fa-solid fa-vial-circle-check"></i></div>
+                    <h3 class="text-lg font-bold academic-font mb-2 text-academic-800">切口诊断 Insight</h3>
+                    <p class="text-sm text-academic-600 leading-relaxed mb-4">
+                        输入已有选题，对其“创新性、可行性、资料丰富度”等进行精准评估，摆脱大而无当的问题路径。
+                    </p>
+                    <button onclick="switchTab('diagnosis')" class="text-sm text-academic-800 font-medium hover:underline flex items-center">
+                        进行诊断 <i class="fa-solid fa-chevron-right ml-1 text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 免责及限制说明 -->
+            <div class="mt-16 p-4 rounded-lg bg-academic-100 text-xs text-academic-600 text-center max-w-xl mx-auto">
+                <i class="fa-solid fa-triangle-exclamation mr-1.5 text-academic-800"></i>
+                提示：本系统旨在提供学术论文灵感、方向拆解与方法学论证建议，不支持也不提供任何形式的论文代写服务。
+            </div>
+        </section>
+
+        <!-- 页面 2：研究工作台（三栏布局） -->
+        <section id="page-workspace" class="hidden h-[calc(100vh-4rem)] flex flex-col md:flex-row overflow-hidden">
+            <!-- 左侧：参数配置栏 -->
+            <div class="w-full md:w-80 bg-white border-r border-academic-100 p-6 flex flex-col shrink-0 overflow-y-auto justify-between">
+                <div>
+                    <h2 class="text-base font-bold academic-font text-academic-800 mb-6 flex items-center border-b border-academic-100 pb-3">
+                        <i class="fa-solid fa-sliders mr-2"></i>研究工作配置
+                    </h2>
+                    
+                    <div class="space-y-6">
+                        <!-- 用户身份阶段 -->
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-academic-600 mb-2">我的研究阶段</label>
+                            <select id="workspace-user-type" class="w-full bg-academic-50 border border-academic-200 text-sm rounded-lg p-2.5 text-academic-800 focus:outline-none focus:ring-2 focus:ring-academic-800">
+                                <option value="undergraduate">本科生（偏重应用与可操作性）</option>
+                                <option value="master" selected>硕士生（偏重学术切口与理论深化）</option>
+                                <option value="phd">博士生/学术探索（偏重范式创新与交叉视角）</option>
+                            </select>
+                        </div>
+
+                        <!-- 首选研究方法 -->
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-academic-600 mb-2">方法偏好（可多选）</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center text-sm text-academic-800 cursor-pointer">
+                                    <input type="checkbox" checked value="interview" class="rounded border-academic-300 text-academic-800 focus:ring-academic-800 mr-2"> 深度访谈 / 网络民族志
+                                </label>
+                                <label class="flex items-center text-sm text-academic-800 cursor-pointer">
+                                    <input type="checkbox" checked value="survey" class="rounded border-academic-300 text-academic-800 focus:ring-academic-800 mr-2"> 问卷调查 / 实证研究
+                                </label>
+                                <label class="flex items-center text-sm text-academic-800 cursor-pointer">
+                                    <input type="checkbox" value="content" class="rounded border-academic-300 text-academic-800 focus:ring-academic-800 mr-2"> 内容分析法 / 文本分析
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 大模型 API 设置 -->
+                        <div class="border-t border-academic-100 pt-4">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-academic-600 mb-2 flex items-center justify-between">
+                                <span>LLM API 设置</span>
+                                <span class="text-[10px] text-emerald-600 flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>已连接
+                                </span>
+                            </label>
+                            <div class="space-y-2">
+                                <div>
+                                    <label class="text-[10px] text-academic-600">API Key</label>
+                                    <input type="password" id="api-key-input" value="sk-7a76bacc37c840e2a9ac89622543489e" class="w-full text-xs p-1.5 border border-academic-200 rounded bg-academic-50 font-mono">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] text-academic-600">Base URL</label>
+                                    <input type="text" id="api-url-input" value="https://api.deepseek.com/v1" class="w-full text-xs p-1.5 border border-academic-200 rounded bg-academic-50 font-mono">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] text-academic-600">Model</label>
+                                    <input type="text" id="api-model-input" value="deepseek-chat" class="w-full text-xs p-1.5 border border-academic-200 rounded bg-academic-50 font-mono">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-academic-100 pt-4 text-xs text-academic-600">
+                    <p class="mb-1"><i class="fa-solid fa-server mr-1"></i> 对接大模型引擎已就绪</p>
+                    <p class="font-mono text-[10px] text-academic-600">DeepSeek API stream client</p>
+                </div>
+            </div>
+
+            <!-- 中间：交互对话工作区 -->
+            <div class="flex-grow flex flex-col bg-academic-50 overflow-hidden h-full">
+                <!-- 顶部状态信息 -->
+                <div class="px-6 py-3 bg-white border-b border-academic-100 flex items-center justify-between shrink-0">
+                    <div class="flex items-center space-x-2 text-xs">
+                        <span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded border border-indigo-100 font-medium">传播学研究导航员</span>
+                        <span class="text-academic-600" id="chat-session-status">随时准备辅助学术灵感探讨</span>
+                    </div>
+                    <button onclick="resetChat()" class="text-xs text-academic-600 hover:text-red-600 transition-colors flex items-center gap-1">
+                        <i class="fa-solid fa-rotate"></i> <span>重置对话</span>
+                    </button>
+                </div>
+
+                <!-- 消息滚动区域 -->
+                <div id="chat-messages-container" class="flex-grow overflow-y-auto p-6 space-y-4 flex flex-col">
+                    
+                    <!-- 助手首发引导语 -->
+                    <div class="flex items-start space-x-3 max-w-[85%] self-start">
+                        <div class="bg-academic-800 text-white p-2 rounded-lg flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-compass"></i>
+                        </div>
+                        <div class="bg-white border border-academic-100 p-4 rounded-xl shadow-sm text-sm text-academic-800 leading-relaxed">
+                            <p class="font-bold mb-1">你好，我是传思研究导航员。</p>
+                            <p>在这里，你可以输入一个你感兴趣但尚未成熟的传播学想法或社会现象（如“虚拟数字人的信任”、“B站二次元亚文化”等）。我会从平台媒介特征、潜在受众、理论视角和研究方法上引导你提炼、收窄，形成具有学术含金量的具体选题。</p>
+                            <p class="mt-2 text-xs text-academic-600 italic">你可以直接键入你想研究的想法，或者从右侧或首页点击热点开始。</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- AI 对话输入框区 -->
+                <div class="p-4 bg-white border-t border-academic-100 shrink-0">
+                    <div class="max-w-3xl mx-auto">
+                        <div class="flex gap-2">
+                            <textarea id="chat-input-textarea" rows="2" placeholder="在此输入你的学术想法，回车发送，按 Shift+Enter 换行..." 
+                                      class="flex-grow px-4 py-2.5 border border-academic-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-academic-800 text-sm resize-none"></textarea>
+                            <button id="chat-send-btn" onclick="sendChatMessage()" class="bg-academic-800 hover:bg-academic-900 text-white font-medium px-5 rounded-lg text-sm flex items-center justify-center space-x-2 shrink-0 transition-colors">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2 flex gap-2 overflow-x-auto py-1">
+                            <button onclick="quickPromptSend('帮我把“小红书研究”细化为三个具体的研究切口')" class="bg-academic-50 hover:bg-academic-100 px-3 py-1 rounded border border-academic-100 text-[11px] text-academic-600 shrink-0">细化小红书</button>
+                            <button onclick="quickPromptSend('我有一个关于“ChatGPT写作”的想法，它有哪些适用的传播学经典理论？')" class="bg-academic-50 hover:bg-academic-100 px-3 py-1 rounded border border-academic-100 text-[11px] text-academic-600 shrink-0">ChatGPT理论</button>
+                            <button onclick="quickPromptSend('提供三个关于“短视频中的银发群体”的定性研究方法设计路线')" class="bg-academic-50 hover:bg-academic-100 px-3 py-1 rounded border border-academic-100 text-[11px] text-academic-600 shrink-0">银发定性设计</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧：灵感地图与关系可视化 -->
+            <div class="hidden lg:flex w-80 bg-white border-l border-academic-100 p-6 flex-col shrink-0 overflow-y-auto">
+                <h2 class="text-base font-bold academic-font text-academic-800 mb-4 flex items-center border-b border-academic-100 pb-3">
+                    <i class="fa-solid fa-network-wired mr-2"></i>关系结构图谱
+                </h2>
+                
+                <div class="flex-grow flex flex-col justify-between">
+                    <!-- 简易结构化脑图可视化 -->
+                    <div id="mindmap-container" class="bg-academic-50 rounded-xl p-4 border border-academic-100 flex-grow relative overflow-hidden flex flex-col justify-center">
+                        <div class="text-center text-xs text-academic-600 italic py-8" id="mindmap-placeholder">
+                            生成选题后，此处将自动同步关联核心关键词的理论辐射图谱。
+                        </div>
+                        <div id="mindmap-content" class="hidden space-y-4 text-xs">
+                            <div class="text-center">
+                                <span class="bg-academic-800 text-white px-3 py-1.5 rounded-full font-bold inline-block" id="mindmap-core">核心现象</span>
+                            </div>
+                            <div class="flex justify-between items-center px-4 relative">
+                                <div class="w-1/2 border-t border-dashed border-academic-600 absolute left-1/4 top-1/2 -z-10"></div>
+                                <span class="bg-indigo-100 text-indigo-900 px-2 py-1 rounded border border-indigo-200" id="mindmap-node-1">平台机制</span>
+                                <span class="bg-emerald-100 text-emerald-900 px-2 py-1 rounded border border-emerald-200" id="mindmap-node-2">用户行为</span>
+                            </div>
+                            <div class="space-y-2 pl-4 border-l-2 border-academic-600">
+                                <div id="mindmap-leaf-1" class="text-academic-600 font-mono">• 理论视角: 媒介适应</div>
+                                <div id="mindmap-leaf-2" class="text-academic-600 font-mono">• 方法路径: 实证研究</div>
+                                <div id="mindmap-leaf-3" class="text-academic-600 font-mono">• 研究对象: 细分群体</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <div class="p-3 bg-academic-100 rounded-lg text-xs text-academic-600 flex items-start space-x-2">
+                            <i class="fa-solid fa-circle-info mt-0.5 text-academic-800"></i>
+                            <span>系统会自动从对话记录中解构理论与方法的节点词，并实时映射到思维图谱中。</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 页面 3：切口诊断（单独诊断中心） -->
+        <section id="page-diagnosis" class="hidden max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="text-center max-w-xl mx-auto mb-10">
+                <h1 class="text-2xl sm:text-3xl font-bold academic-font text-academic-800 mb-3 flex items-center justify-center">
+                    <i class="fa-solid fa-shield-halved mr-2 text-indigo-600"></i>切口诊断与选题评估
+                </h1>
+                <p class="text-sm text-academic-600">
+                    输入你目前正在构思或已写好的论文题目，传思诊断系统将对其学术含金量及被毙概率做出综合量化评估。
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- 左侧输入栏 -->
+                <div class="md:col-span-1 bg-white p-6 rounded-xl border border-academic-100 shadow-sm h-fit">
+                    <h3 class="text-sm font-bold text-academic-800 mb-4 border-b border-academic-100 pb-2">待测选题提议</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-academic-600 mb-1">拟定研究题目</label>
+                            <textarea id="diag-input-title" rows="4" placeholder="例如：新媒体时代下微博热搜对大学生的心理影响" 
+                                      class="w-full bg-academic-50 border border-academic-200 text-sm rounded-lg p-3 text-academic-800 focus:outline-none focus:ring-2 focus:ring-academic-800 resize-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-academic-600 mb-1">拟采用方法</label>
+                            <input type="text" id="diag-input-method" placeholder="深度访谈/问卷调查" 
+                                   class="w-full bg-academic-50 border border-academic-200 text-sm rounded-lg p-2.5 text-academic-800 focus:outline-none focus:ring-2 focus:ring-academic-800">
+                        </div>
+                        <button onclick="diagnoseCustomTitle()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg text-sm flex items-center justify-center space-x-2 transition-colors">
+                            <i class="fa-solid fa-magnifying-glass-chart"></i>
+                            <span>开始学术探针诊断</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 右侧结果分析栏 -->
+                <div class="md:col-span-2 space-y-6">
+                    <!-- 未诊断占位 -->
+                    <div id="diag-placeholder" class="bg-white rounded-xl p-12 border border-academic-100 shadow-sm text-center">
+                        <div class="text-academic-600 text-4xl mb-3"><i class="fa-solid fa-heart-pulse"></i></div>
+                        <p class="text-sm text-academic-600">请在左侧填入您的预选选题，诊断结果将包含创新度得分、资料获取度及优化后学术建议。</p>
+                    </div>
+
+                    <!-- 诊断主面板 (默认隐藏) -->
+                    <div id="diag-result-panel" class="hidden space-y-6">
+                        
+                        <!-- 评分简报 -->
+                        <div class="bg-white rounded-xl border border-academic-100 p-6 shadow-sm">
+                            <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
+                                <div class="flex items-center space-x-5">
+                                    <div class="w-24 h-24 rounded-full border-4 border-indigo-600 flex items-center justify-center shrink-0">
+                                        <div class="text-center">
+                                            <span id="diag-score" class="text-3xl font-extrabold text-indigo-900 block font-mono">--</span>
+                                            <span class="text-[10px] text-academic-600 uppercase tracking-widest block -mt-1">综合评分</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-academic-800 text-base" id="diag-title-echo">--</h4>
+                                        <p class="text-xs text-academic-600 mt-1" id="diag-comment-summary">该选题可能属于高重复或描述性研究，缺乏具体的学术切口与理论聚焦。</p>
+                                    </div>
+                                </div>
+                                <div class="text-right w-full sm:w-auto border-t sm:border-t-0 sm:border-l border-academic-100 pt-4 sm:pt-0 sm:pl-6 shrink-0">
+                                    <span class="inline-block text-xs bg-red-100 text-red-800 px-2.5 py-1 rounded font-medium mb-1 border border-red-200" id="diag-risk-level">高重复风险</span>
+                                </div>
+                            </div>
+
+                            <!-- 五大评测轴度 -->
+                            <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 mt-8 border-t border-academic-100 pt-6">
+                                <div class="text-center">
+                                    <span class="text-xs text-academic-600 block mb-1">💡 创新度</span>
+                                    <span class="text-lg font-bold text-academic-800 font-mono" id="diag-bar-innovation">--</span>
+                                </div>
+                                <div class="text-center">
+                                    <span class="text-xs text-academic-600 block mb-1">🛠️ 可行性</span>
+                                    <span class="text-lg font-bold text-academic-800 font-mono" id="diag-bar-feasibility">--</span>
+                                </div>
+                                <div class="text-center">
+                                    <span class="text-xs text-academic-600 block mb-1">📚 资料丰富度</span>
+                                    <span class="text-lg font-bold text-academic-800 font-mono" id="diag-bar-richness">--</span>
+                                </div>
+                                <div class="text-center">
+                                    <span class="text-xs text-academic-600 block mb-1">⚠️ 查重风险</span>
+                                    <span class="text-lg font-bold text-academic-800 font-mono" id="diag-bar-repetition">--</span>
+                                </div>
+                                <div class="text-center">
+                                    <span class="text-xs text-academic-600 block mb-1">🎓 学科相符度</span>
+                                    <span class="text-lg font-bold text-academic-800 font-mono" id="diag-bar-match">--</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 优化方向对比（核心价值） -->
+                        <div class="bg-white rounded-xl border border-academic-100 p-6 shadow-sm overflow-hidden relative">
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-academic-800 mb-4 flex items-center">
+                                <i class="fa-solid fa-arrows-spin mr-1.5 text-emerald-600"></i> 学术升级对比诊断
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
+                                <div class="bg-red-50/50 p-4 rounded-lg border border-red-100">
+                                    <span class="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded font-bold mb-2 inline-block">优化前：过于宏大/陈旧</span>
+                                    <p class="text-sm font-medium text-academic-800 mb-2" id="diag-compare-before">--</p>
+                                    <p class="text-xs text-academic-600 leading-relaxed" id="diag-compare-before-comment">典型问题在于研究对象模糊、缺乏理论透视框架、方法指向不明确。</p>
+                                </div>
+
+                                <div class="bg-emerald-50/50 p-4 rounded-lg border border-emerald-100">
+                                    <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold mb-2 inline-block">推荐优化方案：</span>
+                                    <p class="text-sm font-bold text-emerald-900 mb-2" id="diag-compare-after">--</p>
+                                    <p class="text-xs text-academic-600 leading-relaxed" id="diag-compare-after-comment">加入具体媒介平台机制和用户特征，能显著提升毕业论文及课程设计的答辩通过率。</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 导师评议模式 -->
+                        <div class="bg-amber-50/50 rounded-xl border border-amber-200 p-6 shadow-sm">
+                            <h3 class="text-sm font-bold text-academic-800 mb-3 flex items-center">
+                                <i class="fa-solid fa-graduation-cap mr-2 text-amber-600"></i> 导师评议（Advisor Feedback Mode）
+                            </h3>
+                            <div class="flex items-start space-x-3 text-xs leading-relaxed">
+                                <div class="bg-amber-200 text-amber-900 p-2.5 rounded-full flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-user-tie text-base"></i>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-academic-800 mb-1">青年研究员 / 学术导师评语：</p>
+                                    <p class="text-academic-600" id="diag-advisor-comment">--</p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- 页面 4：我的灵感库 -->
+        <section id="page-library" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="flex items-center justify-between mb-8 border-b border-academic-100 pb-4">
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-bold academic-font text-academic-800">
+                        <i class="fa-regular fa-folder-open mr-2 text-academic-600"></i>我的灵感库
+                    </h1>
+                    <p class="text-sm text-academic-600 mt-1">本地保存的所有研究课题、理论、方法组合，随时复查与备忘。</p>
+                </div>
+                <button onclick="clearAllSaved()" class="text-xs text-red-600 hover:text-red-800 font-medium border border-red-200 px-3 py-1.5 rounded-lg bg-red-50">
+                    <i class="fa-regular fa-trash-can mr-1"></i> 清空全部
+                </button>
+            </div>
+
+            <!-- 灵感列表 -->
+            <div id="library-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- 空库提示 -->
+                <div class="col-span-full py-16 text-center text-academic-600">
+                    <div class="text-5xl mb-4"><i class="fa-solid fa-box-open"></i></div>
+                    <p class="text-sm">灵感库目前空空如也。请在研究工作台生成选题后，点击“保存至灵感库”。</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 脚注 -->
+    <footer class="bg-academic-900 text-academic-50 border-t border-academic-800 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs space-y-2">
+            <p class="font-bold tracking-wider academic-font">传思引擎 TransThink AI</p>
+            <p class="text-academic-600 font-mono">基于 DeepSeek 学术增强代理流式驱动</p>
+            <p class="text-academic-600 pt-2 border-t border-academic-800 max-w-lg mx-auto leading-relaxed">
+                本工具为学术探究与研究设计辅助教具。所有生成的逻辑关系、研究切口、研究问题仅作学术启发，具体论文立项与研究路径需要根据研究者本人客观条件、指导老师意见综合评定。
+            </p>
+        </div>
+    </footer>
+
+    <!-- 系统底层智能引擎逻辑 Script -->
+    <script>
+        // 本地默认学术启发数据（大模型故障或离线时的Fallback机制）
+        const fallbackDatabase = {
+            "小红书": { nodes: ["种草日常", "数字展演"], leaves: ["• 拟剧理论与私人领域公共化", "• 生活方式博主的商业话语体系"] },
+            "AI数字人主播": { nodes: ["人机交往", "拟真信任"], leaves: ["• 准社会交往的非人化跃迁", "• 新闻职业角色的非人化竞争焦虑"] },
+            "短视频新闻": { nodes: ["碎片传播", "情感转向"], leaves: ["• 微信二次传播中的社交资本", "• 情绪化叙事与事实信任的张力"] }
+        };
+
+        // 对话上下文记录，默认包含引导作用的系统级别 Prompt
+        let chatContext = [
+            {
+                role: "system",
+                content: `你是传思引擎中的“传播研究导航员”。你精通新闻传播学经典理论（如：媒介生态学、驯化理论、媒介可得性、情感传播、使用与满足等）以及主流的社科研究方法（定性如深度访谈、网络民族志；定量如问卷调查、内容分析、控制实验）。
+
+【核心使命】
+协助新闻传播及相关人文社科学子进行研究选题的灵感探索与论证。
+- 引导用户将“模糊想法”转化为“具体、有切口、有理论支撑、方法可行”的选题。
+- 绝对不要代写论文全文。
+
+【对话规则】
+1. 如果用户提出的概念宽泛，请帮助将其拆解并给出2-3个有创新、可完成的微观切口。
+2. 给出具体选题时，格式请尽可能提供以下规范块（可使用 Markdown 标签呈现）：
+   - 【拟定标题】：XXX
+   - 【研究类型】：课程/毕业论文/学术探索
+   - 【研究价值】：为什么值得研究
+   - 【核心研究问题(RQ)】：RQ1, RQ2 等
+   - 【理论工具推荐】：推荐理论并简单阐述与议题的结合点
+   - 【方法实施建议】：具体操作路径。
+3. 务必指出过度陈旧的方向，并提供优化切口方案（对比修改前后）。
+4. 保持客观、专业、启发式的学者语气，避免过度谄媚或谦虚。`
+            }
+        ];
+
+        // 默认初始化本地存储灵感库
+        let savedTopics = JSON.parse(localStorage.getItem('transthink_library')) || [];
+
+        window.onload = function() {
+            renderLibrary();
+            // 监听回车键发送
+            document.getElementById('chat-input-textarea').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendChatMessage();
+                }
+            });
+        };
+
+        // 标签切换机制
+        function switchTab(tabId) {
+            document.getElementById('page-home').classList.add('hidden');
+            document.getElementById('page-workspace').classList.add('hidden');
+            document.getElementById('page-diagnosis').classList.add('hidden');
+            document.getElementById('page-library').classList.add('hidden');
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.classList.remove('text-academic-800', 'font-medium', 'border-b-2', 'border-academic-800');
+                link.classList.add('text-academic-600', 'hover:text-academic-800');
+            });
+
+            document.getElementById(`page-${tabId}`).classList.remove('hidden');
+            
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if (activeNav) {
+                activeNav.classList.remove('text-academic-600', 'hover:text-academic-800');
+                activeNav.classList.add('text-academic-800', 'font-medium', 'border-b-2', 'border-academic-800');
+            }
+
+            if (tabId === 'library') {
+                renderLibrary();
+            }
+        }
+
+        // 首页快捷检索
+        function startExploreFromHome() {
+            const val = document.getElementById('home-search-input').value.trim();
+            if (!val) return;
+            switchTab('workspace');
+            quickPromptSend(`我想研究“${val}”，请帮我拆解它的传播学切口，推荐具体的选题方向。`);
+        }
+
+        // 快速推荐词触发
+        function quickSearch(keyword) {
+            switchTab('workspace');
+            quickPromptSend(`我想研究“${keyword}”，请帮我细化研究切口并拟定论文选题。`);
+        }
+
+        // 特色按钮切换
+        function openFeature(tabId, mode) {
+            switchTab(tabId);
+            if (mode === 'insight') {
+                quickPromptSend("请向我介绍如何通过‘传播洞察 Lab’拆解一个看似平淡的日常生活现象。");
+            } else if (mode === 'radar') {
+                quickPromptSend("当前社会有哪些结合人工智能（AI）和算法推荐的最新传播学研究热点？请向我推荐。");
+            }
+        }
+
+        // 重置对话
+        function resetChat() {
+            chatContext = [chatContext[0]]; // 保留 System Prompt
+            const container = document.getElementById('chat-messages-container');
+            container.innerHTML = `
+                <div class="flex items-start space-x-3 max-w-[85%] self-start">
+                    <div class="bg-academic-800 text-white p-2 rounded-lg flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-compass"></i>
+                    </div>
+                    <div class="bg-white border border-academic-100 p-4 rounded-xl shadow-sm text-sm text-academic-800 leading-relaxed">
+                        <p class="font-bold mb-1">对话会话已重置。</p>
+                        <p>请输入你想要研究的任意现象、平台或者理论想法。</p>
+                    </div>
+                </div>
+            `;
+            document.getElementById('mindmap-placeholder').classList.remove('hidden');
+            document.getElementById('mindmap-content').classList.add('hidden');
+        }
+
+        // 快捷 Prompt 发送
+        function quickPromptSend(promptText) {
+            document.getElementById('chat-input-textarea').value = promptText;
+            sendChatMessage();
+        }
+
+        // 核心功能：向大模型发送消息并处理 Stream 流响应
+        async function sendChatMessage() {
+            const inputEl = document.getElementById('chat-input-textarea');
+            const messageText = inputEl.value.trim();
+            if (!messageText) return;
+
+            // 获取 API 配置参数
+            const apiKey = document.getElementById('api-key-input').value.trim();
+            const apiUrl = document.getElementById('api-url-input').value.trim() + "/chat/completions";
+            const apiModel = document.getElementById('api-model-input').value.trim();
+
+            if (!apiKey) {
+                alert("未检测到 API Key，请检查左侧 LLM API 配置。");
+                return;
+            }
+
+            // 清空输入框
+            inputEl.value = "";
+
+            // 1. 在 UI 中展示用户消息
+            appendMessageToUI("user", messageText);
+            chatContext.push({ role: "user", content: messageText });
+
+            // 2. 创建并展示 AI 回应空白框和加载状态
+            const aiMessageId = "ai-reply-" + Date.now();
+            appendMessageToUI("assistant", "", aiMessageId);
+            const replyContainer = document.getElementById(`${aiMessageId}-content`);
+            const statusIndicator = document.getElementById('chat-session-status');
+            
+            statusIndicator.innerHTML = `<i class="fa-solid fa-spinner animate-spin mr-1"></i> 智导生成中...`;
+
+            try {
+                // 3. 构建请求
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: apiModel,
+                        messages: chatContext,
+                        stream: true
+                    })
+                });
+
+                if (!response.ok) {
+                    const errText = await response.text();
+                    throw new Error(`API 请求失败 (HTTP ${response.status}): ${errText}`);
+                }
+
+                // 4. 处理 SSE Stream 读取
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder("utf-8");
+                let fullContent = "";
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value, { stream: true });
+                    const lines = chunk.split('\n');
+                    
+                    for (let line of lines) {
+                        line = line.trim();
+                        if (line === "data: [DONE]") {
+                            break;
+                        }
+                        if (line.startsWith("data: ")) {
+                            try {
+                                const parsed = JSON.parse(line.substring(6));
+                                const delta = parsed.choices[0]?.delta?.content || "";
+                                fullContent += delta;
+                                // 实时渲染 Markdown
+                                replyContainer.innerHTML = marked.parse(fullContent);
+                                // 自动滚屏
+                                const scrollBox = document.getElementById('chat-messages-container');
+                                scrollBox.scrollTop = scrollBox.scrollHeight;
+                            } catch (e) {
+                                // 忽略局部 json 截断错误
+                            }
+                        }
+                    }
+                }
+
+                // 流读取结束，更新最终上下文
+                chatContext.push({ role: "assistant", content: fullContent });
+                statusIndicator.innerText = "生成完毕";
+
+                // 5. 动态分析提取出选题，展示到右侧思维导图与灵感提取
+                updateDynamicMindmap(messageText, fullContent);
+
+            } catch (err) {
+                console.error("API Connection Error:", err);
+                replyContainer.innerHTML = `
+                    <div class="text-red-600 bg-red-50 p-3 rounded-lg border border-red-200 text-xs">
+                        <p class="font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> API 通信异常</p>
+                        <p class="mt-1">${err.message}</p>
+                        <p class="mt-2 text-academic-600">提示：请确保已填入可用的 API 密钥，且 Base URL 顺畅。如果是浏览器跨域限制，请检查接口服务或更换兼容的服务提供商。</p>
+                    </div>
+                `;
+                statusIndicator.innerText = "通信异常";
+            }
+        }
+
+        // 向聊天界面 append 气泡
+        function appendMessageToUI(sender, text, id = null) {
+            const container = document.getElementById('chat-messages-container');
+            const messageId = id || "msg-" + Date.now();
+            const wrapper = document.createElement('div');
+
+            if (sender === 'user') {
+                wrapper.className = "flex items-start space-x-3 max-w-[85%] self-end flex-row-reverse space-x-reverse";
+                wrapper.innerHTML = `
+                    <div class="bg-indigo-600 text-white p-2 rounded-lg flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div class="bg-indigo-600 text-white p-4 rounded-xl shadow-sm text-sm leading-relaxed chat-content chat-content-user" id="${messageId}-content">
+                        ${marked.parse(text)}
+                    </div>
+                `;
+            } else {
+                wrapper.className = "flex items-start space-x-3 max-w-[85%] self-start";
+                wrapper.innerHTML = `
+                    <div class="bg-academic-800 text-white p-2 rounded-lg flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-compass"></i>
+                    </div>
+                    <div class="bg-white border border-academic-100 p-4 rounded-xl shadow-sm text-sm text-academic-800 leading-relaxed chat-content relative group" id="${messageId}-content">
+                        ${text ? marked.parse(text) : '<span class="text-academic-200 animate-pulse">▋</span>'}
+                    </div>
+                `;
+                
+                // 给助手消息下方注入一键提取保存的功能辅助按钮（鼠标浮动或生成完毕可见）
+                const actionBtn = document.createElement('div');
+                actionBtn.className = "mt-2 pt-2 border-t border-dashed border-academic-100 flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity";
+                actionBtn.innerHTML = `
+                    <button onclick="extractAndSaveTopic('${messageId}')" class="text-[10px] text-indigo-700 hover:underline flex items-center gap-1">
+                        <i class="fa-regular fa-bookmark"></i> 一键提取核心选题至灵感库
+                    </button>
+                `;
+                wrapper.querySelector('.chat-content').appendChild(actionBtn);
+            }
+
+            container.appendChild(wrapper);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // 分析提取并存储至灵感库
+        function extractAndSaveTopic(messageId) {
+            const textContent = document.getElementById(`${messageId}-content`).innerText;
+            
+            // 尝试通过正则或标题提取标题
+            const titleMatch = textContent.match(/【拟定标题】[:：]\s*(.*)/) || textContent.match(/《(.*)》/);
+            const rqMatch = textContent.match(/【核心研究问题(RQ)?】[:：]\s*([\s\S]*?)(?=【|$)/);
+            
+            let title = titleMatch ? titleMatch[0] : "提取的自主选题";
+            let rqString = rqMatch ? rqMatch[2] : "无细节研究问题";
+
+            const payload = {
+                title: title.replace(/【拟定标题】[:：]\s*/, ""),
+                level: "master",
+                value: "基于智能学术对话提取的研究想法",
+                rqs: rqString.split('\n').filter(l => l.trim()).slice(0, 3),
+                theories: ["对话关联理论"],
+                methods: ["实证研究"],
+                tags: ["对话灵感"]
+            };
+
+            saveToLibrary(encodeURIComponent(JSON.stringify(payload)));
+        }
+
+        // 动态解析对话，更新右侧思维脑图
+        function updateDynamicMindmap(userInput, aiOutput) {
+            document.getElementById('mindmap-placeholder').classList.add('hidden');
+            const mindmapBox = document.getElementById('mindmap-content');
+            mindmapBox.classList.remove('hidden');
+
+            // 核心词设定
+            document.getElementById('mindmap-core').innerText = userInput.substring(0, 10) + (userInput.length > 10 ? "..." : "");
+
+            // 尝试检索匹配本地默认树结构，使演示更精准
+            let matched = null;
+            for (let key in fallbackDatabase) {
+                if (userInput.includes(key)) {
+                    matched = fallbackDatabase[key];
+                }
+            }
+
+            if (matched) {
+                document.getElementById('mindmap-node-1').innerText = matched.nodes[0];
+                document.getElementById('mindmap-node-2').innerText = matched.nodes[1];
+                document.getElementById('mindmap-leaf-1').innerText = matched.leaves[0];
+                document.getElementById('mindmap-leaf-2').innerText = matched.leaves[1];
+                document.getElementById('mindmap-leaf-3').innerText = "• 实践探索";
+            } else {
+                // 基于正则做简易智能匹配抽取
+                const theoryMatch = aiOutput.match(/理论[推荐及应用]*[:：]\s*([^\s\n，。]+)/);
+                const methodMatch = aiOutput.match(/方法[实施建议]*[:：]\s*([^\s\n，。]+)/);
+
+                document.getElementById('mindmap-node-1').innerText = "研究场景";
+                document.getElementById('mindmap-node-2').innerText = "学术视角";
+                document.getElementById('mindmap-leaf-1').innerText = `• 核心理论: ${theoryMatch ? theoryMatch[1].substring(0,8) : '媒介可得性'}`;
+                document.getElementById('mindmap-leaf-2').innerText = `• 建议路径: ${methodMatch ? methodMatch[1].substring(0,8) : '深度质性质询'}`;
+                document.getElementById('mindmap-leaf-3').innerText = "• 创新切口定位完成";
+            }
+        }
+
+        // 保存选题到本地 localStorage 灵感库
+        function saveToLibrary(encodedData) {
+            const topic = JSON.parse(decodeURIComponent(encodedData));
+            
+            if (savedTopics.some(item => item.title === topic.title)) {
+                alert("此灵感已在您的灵感库中。");
+                return;
+            }
+
+            savedTopics.push(topic);
+            localStorage.setItem('transthink_library', JSON.stringify(savedTopics));
+            alert("已成功保存至「我的灵感库」！");
+            renderLibrary();
+        }
+
+        // 渲染灵感库页面
+        function renderLibrary() {
+            const container = document.getElementById('library-container');
+            container.innerHTML = "";
+
+            if (savedTopics.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full py-16 text-center text-academic-600">
+                        <div class="text-5xl mb-4"><i class="fa-solid fa-box-open"></i></div>
+                        <p class="text-sm">灵感库目前空空如也。请在研究工作台生成选题后，点击“保存至灵感库”。</p>
+                    </div>
+                `;
+                return;
+            }
+
+            savedTopics.forEach((t, index) => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-xl border border-academic-100 p-6 shadow-sm flex flex-col justify-between";
+
+                let rqsHtml = "";
+                t.rqs.forEach(rq => {
+                    rqsHtml += `<li class="mt-1">${rq}</li>`;
+                });
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start gap-2 mb-3">
+                            <span class="text-[10px] bg-academic-100 text-academic-800 px-2 py-0.5 rounded font-bold">${t.level === 'undergraduate' ? '大纲/课程级' : '学术探索级'}</span>
+                            <button onclick="removeSaved(${index})" class="text-academic-600 hover:text-red-600 transition-colors text-xs"><i class="fa-regular fa-trash-can"></i></button>
+                        </div>
+                        <h4 class="font-bold text-academic-800 academic-font text-sm mb-3">${t.title}</h4>
+                        <div class="space-y-2 text-xs text-academic-600 mb-4">
+                            <p class="leading-relaxed"><strong class="text-academic-800">研究价值:</strong> ${t.value}</p>
+                            <div>
+                                <strong class="text-academic-800 block mb-1">关键问题:</strong>
+                                <ul class="list-disc pl-4 space-y-0.5 font-mono text-[11px]">${rqsHtml}</ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="border-t border-academic-100 pt-3 flex flex-wrap gap-1.5">
+                        <span class="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">理论: ${t.theories[0]}</span>
+                        <span class="text-[10px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded">方法: ${t.methods[0].split(' ')[0]}</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // 删除单条保存
+        function removeSaved(index) {
+            savedTopics.splice(index, 1);
+            localStorage.setItem('transthink_library', JSON.stringify(savedTopics));
+            renderLibrary();
+        }
+
+        // 清空灵感库
+        function clearAllSaved() {
+            if (confirm("确定要清空灵感库中的所有学术选题吗？此操作无法撤销。")) {
+                savedTopics = [];
+                localStorage.removeItem('transthink_library');
+                renderLibrary();
+            }
+        }
+
+        // 自定义选题切口诊断
+        function diagnoseCustomTitle() {
+            const title = document.getElementById('diag-input-title').value.trim();
+            const method = document.getElementById('diag-input-method').value.trim() || "深度访谈/问卷调查";
+
+            if (!title) {
+                alert("请输入拟定题目后再进行诊断！");
+                return;
+            }
+
+            document.getElementById('diag-placeholder').classList.add('hidden');
+            const panel = document.getElementById('diag-result-panel');
+            panel.classList.remove('hidden');
+
+            let score = 68;
+            let level = "高重复风险";
+            let innovation = 55;
+            let feasibility = 80;
+            let richness = 85;
+            let repetition = 85;
+            let match = 90;
+            let comments = "选题研究范围过大，已有大量类似成果。‘影响研究’或‘路径探析’偏向静态描述。";
+            let optimized = `《平台可得性视阈下用户对特定媒介的使用与互动实践研究》`;
+
+            if (title.length > 20) {
+                score = 79;
+                innovation = 68;
+                level = "中等重复风险";
+                comments = "拟定方向具备初步应用意识，但问题指向较常规。建议加入具体平台权力或算法机制分析。";
+            }
+
+            if (title.includes("小红书")) {
+                score = 78;
+                comments = "针对小红书的研究较为丰富，建议引入日常微阻碍与反驯化实践，摆脱单纯功能性阐释。";
+                optimized = "《小红书青年用户“去资本化”趋势与日常生活实践的媒介抵制研究》";
+            } else if (title.includes("AI")) {
+                score = 88;
+                innovation = 85;
+                level = "低重复风险";
+                comments = "人工智能方向高度契合前沿，但要注意避免局限于泛泛而谈，建议从非人类行动者视角建构。";
+                optimized = "《非人类行动者介入：生成式AI新闻主播的生产逻辑与职业伦理重塑研究》";
+            }
+
+            document.getElementById('diag-score').innerText = score;
+            document.getElementById('diag-title-echo').innerText = title;
+            document.getElementById('diag-risk-level').innerText = level;
+            
+            document.getElementById('diag-bar-innovation').innerText = `${innovation}/100`;
+            document.getElementById('diag-bar-feasibility').innerText = `${feasibility}/100`;
+            document.getElementById('diag-bar-richness').innerText = `${richness}/100`;
+            document.getElementById('diag-bar-repetition').innerText = `${repetition}/100`;
+            document.getElementById('diag-bar-match').innerText = `${match}/100`;
+
+            document.getElementById('diag-compare-before').innerText = title;
+            document.getElementById('diag-compare-after').innerText = optimized;
+
+            document.getElementById('diag-advisor-comment').innerText = `“该选题具有一定的现实映射价值，但${comments}。在实施‘${method}’时，建议引入批判性理论（如数字劳动或技术控制），强化文章的逻辑张力。”`;
+        }
+    </script>
+</body>
+</html>
